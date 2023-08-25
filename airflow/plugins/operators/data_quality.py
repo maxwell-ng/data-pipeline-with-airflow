@@ -9,19 +9,20 @@ class DataQualityOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",
-                 sql_queries=None,
+                 dq_sql_checks=None,
                  *args, **kwargs):
 
         super(DataQualityOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
-        self.sql_queries = sql_queries
+        self.dq_sql_checks = dq_sql_checks
 
     def execute(self, context):
         self.log.info('Establishing connection with Redshift cluster.')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info('Starting data quality checks.')
-        for i in self.sql_queries:
-            if redshift.get_records(i):
-                raise ValueError(f"The following query: ({i}) returned unexpected results")
-            
+        for check in self.dq_sql_checks:
+            result = redshift.get_records(check['check_sql'])
+            if result != check['expected_result']:
+                raise ValueError(f"The following query: ({check['check_sql']}) returned unexpected results")
+            self.log.info(f"Data quality check for the for following query: {check['check_sql']}, returned expected result: {check['expected_result']}")

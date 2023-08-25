@@ -10,7 +10,6 @@ class LoadDimensionOperator(BaseOperator):
     def __init__(self,
                  redshift_conn_id="",
                  table_name="",
-                 sql_create="",
                  sql_insert="",
                  append=True,
                  *args, **kwargs):
@@ -18,7 +17,6 @@ class LoadDimensionOperator(BaseOperator):
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
         self.table_name = table_name
         self.redshift_conn_id = redshift_conn_id
-        self.sql_create = sql_create
         self.sql_insert = sql_insert
         self.append = append
 
@@ -29,17 +27,13 @@ class LoadDimensionOperator(BaseOperator):
             try:
                 self.log.info(f"Clearing data from destination Redshift table: {self.table_name}")
                 redshift.run(f"DELETE FROM {self.table_name}")
-            except Exception as err:
-                self.log.info(str(err))
+            except Exception:
+                self.log.info(f"The table {self.table_name} does not exist.")
         
         try:
-            self.log.info(f"Creating dimension table ({self.table_name}) in Redshift.")
-            redshift.run(self.sql_create)
+            self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
+            insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
+            redshift.run(insert_stm)
+        except Exception as err:
+            self.log.info(f"Task failed because of: {str(err)}")
             
-            self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
-            insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
-            redshift.run(insert_stm)
-        except Exception:
-            self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
-            insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
-            redshift.run(insert_stm)

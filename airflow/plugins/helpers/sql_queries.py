@@ -155,39 +155,29 @@ class SqlQueries:
         FROM staging_events
     """)
 
-    check_duplicate_song_id = ("""
-        SELECT songid, COUNT(*) as count FROM songs GROUP BY songid HAVING count = 0;"
-    """)
-    check_duplicate_user_id = ("""
-        SELECT userid, COUNT(*) as count FROM users GROUP BY userid HAVING count = 0;"
-    """)
-    check_duplicate_artist_id = ("""
-        SELECT artistid, COUNT(*) as count FROM artists GROUP BY artistid HAVING count = 0;"
-    """)
-    check_null_values_time = ("""
-        SELECT *
-        FROM time
-        WHERE start_time IS NULL 
-              OR hour IS NULL 
-              OR day IS NULL 
-              OR week IS NULL 
-              OR month IS NULL 
-              OR year IS NULL 
-              OR weekday IS NULL;
-    """)
-    check_null_values_songplay = ("""
-        SELECT *
-        FROM songplays
-        WHERE playid IS NULL
-              OR start_time IS NULL
-              OR userid IS NULL
-              OR level IS NULL
-              OR songid IS NULL
-              OR artistid IS NULL
-              OR sessionid IS NULL;
-    """)
-    dq_query_list = [
-        check_duplicate_song_id, check_duplicate_user_id, 
-        check_duplicate_artist_id, check_null_values_time, 
-        check_null_values_songplay
-        ]
+    dq_checks_stm = [
+        {"check_sql": "SELECT COUNT(*) FROM songs WHERE songid is null;", "expected_result": 0},
+        {"check_sql": "SELECT COUNT(*) FROM users WHERE userid is null;", "expected_result": 0},
+        {"check_sql": "SELECT COUNT(*) FROM artists WHERE artistid is null;", "expected_result": 0},
+        {"check_sql": """SELECT *
+                            FROM time
+                            WHERE start_time IS NULL 
+                                OR hour IS NULL 
+                                OR day IS NULL 
+                                OR week IS NULL 
+                                OR month IS NULL 
+                                OR year IS NULL 
+                                OR weekday IS NULL;""",
+        "expected_result": 0},
+        {"check_sql": """SELECT *
+                        FROM songplays
+                        WHERE playid IS NULL
+                            OR start_time IS NULL
+                            OR userid IS NULL
+                            OR level IS NULL
+                            OR songid IS NULL
+                            OR artistid IS NULL
+                            OR sessionid IS NULL;""",
+        "expected_result": 0 },
+    ]
+    
