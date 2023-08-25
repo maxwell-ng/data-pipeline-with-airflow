@@ -24,16 +24,10 @@ class LoadDimensionOperator(BaseOperator):
         self.log.info('Establishing connection with Redshift cluster.')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         if not self.append:
-            try:
-                self.log.info(f"Clearing data from destination Redshift table: {self.table_name}")
-                redshift.run(f"DELETE FROM {self.table_name}")
-            except Exception:
-                self.log.info(f"The table {self.table_name} does not exist.")
+            self.log.info(f"Clearing data from destination Redshift table: {self.table_name}")
+            redshift.run(f"DELETE FROM {self.table_name}")
         
-        try:
-            self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
-            insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
-            redshift.run(insert_stm)
-        except Exception as err:
-            self.log.info(f"Task failed because of: {str(err)}")
+        self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
+        insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
+        redshift.run(insert_stm)
             

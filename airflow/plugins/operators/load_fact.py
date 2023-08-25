@@ -21,9 +21,7 @@ class LoadFactOperator(BaseOperator):
     def execute(self, context):
         self.log.info('Establishing connection with Redshift cluster.')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
-        try:
-            self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
-            insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
-            redshift.run(insert_stm)
-        except Exception as err:
-            self.log.info(f"Task failed because of: {str(err)}")
+
+        self.log.info(f"Inserting data in dimension table ({self.table_name}) in Redshift.")
+        insert_stm = f"INSERT INTO {self.table_name} ({self.sql_insert});"
+        redshift.run(insert_stm)

@@ -29,12 +29,9 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info('Getting AWS credentials')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         
-        try:
-            self.log.info(f"Deleting all records from table ({self.table_name}) in Redshift")
-            redshift.run(f"DELETE FROM {self.table_name};")
-        except Exception:
-            self.log.info(f"The table {self.table_name} does not exist")
-            
+        self.log.info(f"Deleting all records from table ({self.table_name}) in Redshift")
+        redshift.run(f"DELETE FROM {self.table_name};")
+        
         self.log.info("Copying data from S3 to Redshift")
         s3_path = f"s3://{self.s3_bucket}/{self.s3_key}"
         formatted_sql = self.sql_copy.format(
